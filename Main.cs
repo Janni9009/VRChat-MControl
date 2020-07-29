@@ -13,7 +13,7 @@ namespace MControl
         public const string Name = "MControl";
         public const string Author = "Janni9009";
         public const string Company = "VRChat Modding Group";
-        public const string Version = "1.0";
+        public const string Version = "1.1";
         public const string DownloadLink = null;
     }
     public class MControl : MelonMod {
@@ -33,7 +33,12 @@ namespace MControl
             var assetBundle = AssetBundle.LoadFromMemory_Internal(memStream.ToArray(), 0);
             assetBundle.hideFlags |= HideFlags.DontUnloadUnusedAsset;
             Buttons = new ResourceBundle(assetBundle);
-            
+
+            if (!File.Exists(Path.Combine(Environment.CurrentDirectory, "wsock32.dll"))) {
+                QuickMenu.prop_QuickMenu_0.GetComponent<BoxCollider>().size += new Vector3(0f, 840f, 0f);
+                MelonModLogger.Log("RubyLoader not found, therefore expanding QM collision up");
+            }
+
             MelonModLogger.Log("Constructing Media Control Buttons: 1/5");
             
             BaseButton = QuickMenu.prop_QuickMenu_0.transform.Find("ShortcutMenu/WorldsButton").gameObject;
@@ -106,8 +111,8 @@ namespace MControl
             nxbrt.localPosition = new Vector2(700f, 2240f);
             nxbrt.localScale = nxbrt.localScale / 1.5f;
             NextButton.GetComponent<Image>().sprite = Buttons.bigNextButton;
-            NextButton.GetComponent<UiTooltip>().text = "Go to the previous song in your Playlist (click twice)\n or restart the current song";
-            NextButton.GetComponent<UiTooltip>().alternateText = "Go to the previous song in your Playlist (click twice)\n or restart the current song";
+            NextButton.GetComponent<UiTooltip>().text = "Go to the next song in your Playlist";
+            NextButton.GetComponent<UiTooltip>().alternateText = "Go to the next song in your Playlist";
             Component.DestroyImmediate(NextButton.GetComponentInChildren<Text>());
             NextButtonButton = NextButton.GetComponent<Button>();
             NextButtonButton.name = "MC_NextSong";
@@ -130,8 +135,6 @@ namespace MControl
         private static Transform parentMenu;
         private static GameObject ShowButton;
         private static Button ShowButtonButton;
-        private static GameObject HideButton;
-        private static Button HideButtonButton;
         private static GameObject PrevButton;
         private static Button PrevButtonButton;
         private static GameObject PlayButton;
