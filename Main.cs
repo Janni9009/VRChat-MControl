@@ -62,8 +62,8 @@ namespace MControl
             prbrt.localPosition = new Vector2(-140f, 2240f);
             prbrt.localScale = prbrt.localScale / 1.5f;
             PrevButton.GetComponent<Image>().sprite = Buttons.bigNextButton;
-            PrevButton.GetComponent<UiTooltip>().text = "Go to the next song in your Playlist";
-            PrevButton.GetComponent<UiTooltip>().alternateText = "Go to the next song in your Playlist";
+            PrevButton.GetComponent<UiTooltip>().text = "Go to the previous song in your Playlist (click twice)\n or restart the current song";
+            PrevButton.GetComponent<UiTooltip>().alternateText = "Go to the previous song in your Playlist (click twice)\n or restart the current song";
             PrevButton.transform.rotation *= Quaternion.Euler(0f, 0f, 180f);
             Component.DestroyImmediate(PrevButton.GetComponentInChildren<Text>());
             PrevButtonButton = PrevButton.GetComponent<Button>();
