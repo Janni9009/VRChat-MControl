@@ -13,7 +13,7 @@ namespace MControl
         public const string Name = "MControl";
         public const string Author = "Janni9009";
         public const string Company = "VRChat Modding Group";
-        public const string Version = "1.1";
+        public const string Version = "1.2";
         public const string DownloadLink = null;
     }
     public class MControl : MelonMod {
