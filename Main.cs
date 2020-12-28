@@ -18,14 +18,15 @@ namespace MControl
     }
     public class MControl : MelonMod {
         public override void OnApplicationStart() {
-            ModPrefs.RegisterCategory("MControl", "MControl");
-            ModPrefs.RegisterPrefBool("MControl", "ShowAtStartup", false, "Show Media Keys on game launch");
+            MelonPrefs.RegisterCategory("MControl", "MControl");
+            MelonPrefs.RegisterBool("MControl", "ShowAtStartup", false, "Show Media Keys on game launch");
+            MelonPrefs.RegisterBool("MControl", "MoveMediaVRCPlus", false, "Shift Media Keys over to the left to not obstruct VRC+ Pet");
         }
         public override void VRChat_OnUiManagerInit() {
             MelonCoroutines.Start(Init());
         }
         private IEnumerator Init() {
-            MelonModLogger.Log("Loading Sprite Data Bundle");
+            MelonLogger.Log("Loading Sprite Data Bundle");
             
             using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MControl.resources.mco");
             using MemoryStream memStream = new MemoryStream((int)stream.Length);
@@ -36,10 +37,10 @@ namespace MControl
 
             if (!File.Exists(Path.Combine(Environment.CurrentDirectory, "wsock32.dll"))) {
                 QuickMenu.prop_QuickMenu_0.GetComponent<BoxCollider>().size += new Vector3(0f, 840f, 0f);
-                MelonModLogger.Log("RubyLoader not found, therefore expanding QM collision up");
+                MelonLogger.Log("RubyLoader not found, therefore expanding QM collision up");
             }
 
-            MelonModLogger.Log("Constructing Media Control Buttons: 1/5");
+            MelonLogger.Log("Constructing Media Control Buttons: 1/5");
             
             BaseButton = QuickMenu.prop_QuickMenu_0.transform.Find("ShortcutMenu/WorldsButton").gameObject;
             parentMenu = QuickMenu.prop_QuickMenu_0.transform.Find("ShortcutMenu");
@@ -55,11 +56,10 @@ namespace MControl
             ShowButtonButton.onClick = new Button.ButtonClickedEvent();
             ShowButtonButton.onClick.AddListener(DelegateSupport.ConvertDelegate<UnityAction>(new Action(ToggleButtons)));
 
-            MelonModLogger.Log("Constructing Media Control Buttons: 2/5");
+            MelonLogger.Log("Constructing Media Control Buttons: 2/5");
 
             PrevButton = GameObject.Instantiate(BaseButton, parentMenu, true);
             var prbrt = PrevButton.GetComponent<RectTransform>();
-            prbrt.localPosition = new Vector2(-140f, 2240f);
             prbrt.localScale = prbrt.localScale / 1.5f;
             PrevButton.GetComponent<Image>().sprite = Buttons.bigNextButton;
             PrevButton.GetComponent<UiTooltip>().text = "Go to the previous song in your Playlist (click twice)\n or restart the current song";
@@ -70,13 +70,12 @@ namespace MControl
             PrevButtonButton.name = "MC_PreviousSong";
             PrevButtonButton.onClick = new Button.ButtonClickedEvent();
             PrevButtonButton.onClick.AddListener(DelegateSupport.ConvertDelegate<UnityAction>(new Action(MediaControl.PrevTrack)));
-            PrevButton.SetActive(ModPrefs.GetBool("MControl", "ShowAtStartup"));
+            PrevButton.SetActive(MelonPrefs.GetBool("MControl", "ShowAtStartup"));
 
-            MelonModLogger.Log("Constructing Media Control Buttons: 3/5");
+            MelonLogger.Log("Constructing Media Control Buttons: 3/5");
 
             PlayButton = GameObject.Instantiate(BaseButton, parentMenu, true);
             var plbrt = PlayButton.GetComponent<RectTransform>();
-            plbrt.localPosition = new Vector2(140f, 2240f);
             plbrt.localScale = plbrt.localScale / 1.5f;
             PlayButton.GetComponent<Image>().sprite = Buttons.bigPlayPauseButton;
             PlayButton.GetComponent<UiTooltip>().text = "Pause or continue listening to the current song";
@@ -86,13 +85,12 @@ namespace MControl
             PlayButtonButton.name = "MC_PlayPause";
             PlayButtonButton.onClick = new Button.ButtonClickedEvent();
             PlayButtonButton.onClick.AddListener(DelegateSupport.ConvertDelegate<UnityAction>(new Action(MediaControl.PlayPause)));
-            PlayButton.SetActive(ModPrefs.GetBool("MControl", "ShowAtStartup"));
+            PlayButton.SetActive(MelonPrefs.GetBool("MControl", "ShowAtStartup"));
 
-            MelonModLogger.Log("Constructing Media Control Buttons: 4/5");
+            MelonLogger.Log("Constructing Media Control Buttons: 4/5");
 
             StopButton = GameObject.Instantiate(BaseButton, parentMenu, true);
             var stbrt = StopButton.GetComponent<RectTransform>();
-            stbrt.localPosition = new Vector2(420f, 2240f);
             stbrt.localScale = stbrt.localScale / 1.5f;
             StopButton.GetComponent<Image>().sprite = Buttons.bigStopButton;
             StopButton.GetComponent<UiTooltip>().text = "Stop the current song completely";
@@ -102,13 +100,12 @@ namespace MControl
             StopButtonButton.name = "MC_StopSong";
             StopButtonButton.onClick = new Button.ButtonClickedEvent();
             StopButtonButton.onClick.AddListener(DelegateSupport.ConvertDelegate<UnityAction>(new Action(MediaControl.Stop)));
-            StopButton.SetActive(ModPrefs.GetBool("MControl", "ShowAtStartup"));
+            StopButton.SetActive(MelonPrefs.GetBool("MControl", "ShowAtStartup"));
 
-            MelonModLogger.Log("Constructing Media Control Buttons: 5/5");
+            MelonLogger.Log("Constructing Media Control Buttons: 5/5");
 
             NextButton = GameObject.Instantiate(BaseButton, parentMenu, true);
             var nxbrt = NextButton.GetComponent<RectTransform>();
-            nxbrt.localPosition = new Vector2(700f, 2240f);
             nxbrt.localScale = nxbrt.localScale / 1.5f;
             NextButton.GetComponent<Image>().sprite = Buttons.bigNextButton;
             NextButton.GetComponent<UiTooltip>().text = "Go to the next song in your Playlist";
@@ -118,11 +115,36 @@ namespace MControl
             NextButtonButton.name = "MC_NextSong";
             NextButtonButton.onClick = new Button.ButtonClickedEvent();
             NextButtonButton.onClick.AddListener(DelegateSupport.ConvertDelegate<UnityAction>(new Action(MediaControl.NextTrack)));
-            NextButton.SetActive(ModPrefs.GetBool("MControl", "ShowAtStartup"));
+            NextButton.SetActive(MelonPrefs.GetBool("MControl", "ShowAtStartup"));
 
-            MelonModLogger.Log("Constructing Media Control Buttons: Done! Halting Init Coroutine.");
+            if (MelonPrefs.GetBool("MControl", "MoveMediaVRCPlus")) {
+                prbrt.localPosition = new Vector2(-420f, 2240f);
+                plbrt.localPosition = new Vector2(-140f, 2240f);
+                stbrt.localPosition = new Vector2(140f, 2240f);
+                nxbrt.localPosition = new Vector2(420f, 2240f);
+            } else {
+                prbrt.localPosition = new Vector2(-140f, 2240f);
+                plbrt.localPosition = new Vector2(140f, 2240f);
+                stbrt.localPosition = new Vector2(420f, 2240f);
+                nxbrt.localPosition = new Vector2(700f, 2240f);
+            }
+
+            MelonLogger.Log("Constructing Media Control Buttons: Done! Halting Init Coroutine.");
             
             yield break;
+        }
+        public override void OnModSettingsApplied() {
+            if (MelonPrefs.GetBool("MControl", "MoveMediaVRCPlus")) {
+                PrevButton.GetComponent<RectTransform>().localPosition = new Vector2(-420f, 2240f);
+                PlayButton.GetComponent<RectTransform>().localPosition = new Vector2(-140f, 2240f);
+                StopButton.GetComponent<RectTransform>().localPosition = new Vector2(140f, 2240f);
+                NextButton.GetComponent<RectTransform>().localPosition = new Vector2(420f, 2240f);
+            } else {
+                PrevButton.GetComponent<RectTransform>().localPosition = new Vector2(-140f, 2240f);
+                PlayButton.GetComponent<RectTransform>().localPosition = new Vector2(140f, 2240f);
+                StopButton.GetComponent<RectTransform>().localPosition = new Vector2(420f, 2240f);
+                NextButton.GetComponent<RectTransform>().localPosition = new Vector2(700f, 2240f);
+            }
         }
         private void ToggleButtons() {
             PrevButton.SetActive(!PrevButton.activeSelf);
